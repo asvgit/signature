@@ -90,22 +90,17 @@ PosVector SplitFile(const ProgramOptions &opt) {
 class Mapper {
 public:
 	void operator () (const string &item) {
-		m_val.push_back(item);
 		boost::crc_32_type result;
 		result.process_bytes(item.data(), item.size());
 		m_hash.push_back(result.checksum());
 	}
 
 	void operator () (std::ofstream &stream) {
-		for (const auto &v : m_val)
-			std::cout << v.size() << " ";
-		std::cout << std::endl;
 		for (const auto h : m_hash)
 			stream << h << " ";
 	}
 
 private:
-	StringVec m_val;
 	std::vector<uint> m_hash;
 };
 
@@ -167,10 +162,6 @@ int main(int ac, char* av[]) {
 		}
 
 		auto points = SplitFile(*opt);
-
-		for (auto p : points)
-			std::cout << p << std::endl;
-
 		std::vector<std::thread> readers;
 		std::vector<Mapper> mappers(points.size() - 1);
 		for (size_t i(0); i < points.size() - 1; ++i) {
