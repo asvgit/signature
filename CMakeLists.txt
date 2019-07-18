@@ -4,7 +4,8 @@ project(signature VERSION 0.0.$ENV{TRAVIS_BUILD_NUMBER})
 
 add_executable(signature main.cpp)
 
-find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(Threads)
+find_package(Boost COMPONENTS program_options filesystem REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIR})
 
@@ -15,6 +16,7 @@ set_target_properties(signature PROPERTIES
 )
 
 target_link_libraries(signature
+	${CMAKE_THREAD_LIBS_INIT}
 	${Boost_LIBRARIES}
 )
 
