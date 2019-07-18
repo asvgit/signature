@@ -97,7 +97,7 @@ public:
 
 	void operator () (std::ofstream &stream) {
 		for (const auto h : m_hash)
-			stream << h << " ";
+			stream << h;
 	}
 
 private:
