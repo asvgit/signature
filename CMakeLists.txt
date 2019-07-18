@@ -4,10 +4,18 @@ project(signature VERSION 0.0.$ENV{TRAVIS_BUILD_NUMBER})
 
 add_executable(signature main.cpp)
 
+find_package(Boost COMPONENTS program_options REQUIRED)
+
+include_directories(${Boost_INCLUDE_DIR})
+
 set_target_properties(signature PROPERTIES
 	CXX_STANDARD 14
 	CXX_STANDARD_REQUIRED ON
 	COMPILE_OPTIONS "-Wpedantic;-Wall;-Wextra"
+)
+
+target_link_libraries(signature
+	${Boost_LIBRARIES}
 )
 
 install(TARGETS signature RUNTIME DESTINATION bin)
