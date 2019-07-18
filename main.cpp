@@ -4,6 +4,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
+#include <boost/crc.hpp>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -79,17 +80,22 @@ class Mapper {
 public:
 	void operator () (const string &item) {
 		m_val.push_back(item);
+		boost::crc_32_type result;
+		result.process_bytes(item.data(), item.size());
+		m_hash.push_back(result.checksum());
 	}
 
-	void operator () () {
+	void operator () (std::ofstream &stream) {
 		for (const auto &v : m_val)
 			std::cout << v.size() << " ";
 		std::cout << std::endl;
+		for (const auto h : m_hash)
+			stream << h << " ";
 	}
 
 private:
-	size_t m_id;
 	StringVec m_val;
+	std::vector<uint> m_hash;
 };
 
 struct ReadingParams {
@@ -97,19 +103,21 @@ struct ReadingParams {
 	unsigned start;
 	unsigned end;
 	unsigned block_size;
-	size_t mapper_id;
 };
 
 void Read(const ReadingParams &params, Mapper &m) {
 	std::ifstream stream(params.src);
 	stream.seekg(params.start);
-	const unsigned buf_size = params.block_size;
-	// while (stream.tellg() < params.end && std::getline(stream, buf)) {
 	for (unsigned i(params.start); i < params.end; i += params.block_size) {
+		const unsigned buf_size = i + params.block_size > params.end
+			? params.end - i
+			: params.block_size;
 		string buf;
 		buf.resize(buf_size);
 		stream.read(&buf[0], buf_size);
-		m(buf);
+		m(buf_size < params.block_size
+				? buf + string(params.block_size - buf_size, '\0')
+				: buf);
 	}
 }
 
@@ -134,7 +142,6 @@ int main(int ac, char* av[]) {
 				, points[i]
 				, points[i + 1]
 				, opt->block_size_mb * 1024 * 1024
-				, i
 			};
 			readers.emplace_back(Read
 					, std::move(params)
@@ -144,8 +151,9 @@ int main(int ac, char* av[]) {
 		for (auto &r : readers)
 			r.join();
 
+		std::ofstream ostream(opt->output_file);
 		for (auto &m : mappers)
-			m();
+			m(ostream);
 	} catch(const std::exception &e) {
 		std::cerr << e.what() << std::endl;
 	} catch(...) {
