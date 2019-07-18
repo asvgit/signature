@@ -45,6 +45,16 @@ struct ProgramOptions {
 	}
 };
 
+template<typename T>
+T GetArg(int ac, char *av[], const int ind, T def) {
+	if (ac < ind + 1)
+		return def;
+	std::stringstream ss(av[ind]);
+	T n;
+	ss >> n;
+	return n;
+}
+
 PosVector SplitFile(const ProgramOptions &opt) {
 	fs::path path(opt.input_file);
 	if (!fs::exists(path)) {
@@ -139,6 +149,21 @@ int main(int ac, char* av[]) {
 		if (opt->var_map.count("help")) {
 			std::cout << opt->desc << std::endl;
 			return 0;
+		}
+		if (opt->input_file.empty()
+				&& opt->output_file.empty()
+				&& !opt->var_map.count("block-size"))
+		{
+			opt->input_file = GetArg<string>(ac, av, 1, "");
+			opt->output_file = GetArg<string>(ac, av, 2, "");
+			opt->block_size_mb = GetArg<unsigned>(ac, av, 3, 1);
+		} else if (opt->input_file.empty() || opt->output_file.empty()) {
+			std::cerr << "Too few arguments!" << std::endl;
+			throw;
+		}
+		if (opt->input_file.empty() && opt->output_file.empty()) {
+			std::cerr << "Too few arguments!" << std::endl;
+			throw;
 		}
 
 		auto points = SplitFile(*opt);
