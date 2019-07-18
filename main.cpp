@@ -52,9 +52,9 @@ PosVector SplitFile(const ProgramOptions &opt) {
 		throw;
 	}
 
-	const int file_size = fs::file_size(path);
+	const unsigned file_size = fs::file_size(path);
 	const auto block_size = opt.block_size_mb * 1024 * 1024;
-	const int block_number = fs::file_size(path) % block_size
+	const uint block_number = fs::file_size(path) % block_size
 		? fs::file_size(path) / block_size + 1
 		: fs::file_size(path) / block_size;
 	const unsigned block_per_work = block_number / opt.workers_number;
@@ -62,12 +62,13 @@ PosVector SplitFile(const ProgramOptions &opt) {
 
 	PosVector pos(opt.workers_number + 1);
 	pos[0] = 0;
-	for (unsigned i(1); i < opt.workers_number; ++i)
-		pos[i] = i
-			* block_size
-			* (i - 1 < addon_blocks
+	for (unsigned i(1); i < opt.workers_number; ++i) {
+		const auto current_block_number = i - 1 < addon_blocks
 					? block_per_work + 1
-					: block_per_work);
+					: block_per_work;
+		const auto new_pos = i * block_size * current_block_number;
+		pos[i] = new_pos < file_size ? new_pos : file_size; 
+	}
 	pos.back() = file_size;
 
 	std::sort(pos.begin(), pos.end());
