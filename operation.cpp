@@ -56,29 +56,33 @@ struct ReadingParams {
 };
 
 void Read(const ReadingParams &params, operation::Mapper &m) {
-	const size_t read_by = 1024;
-	std::ifstream stream(params.src);
-	stream.seekg(params.start);
-	for (unsigned i(params.start); i < params.end; i += params.block_size) {
-		const auto current_block_size = i + params.block_size > params.end
-			? params.end - i
-			: params.block_size;
-		const auto block_end = i + current_block_size;
-		auto read_pos = i;
-		string block_str;
-		do {
-			const auto buf_size = read_pos + read_by < block_end
-				? read_by
-				: block_end - read_pos;
-			string buf;
-			buf.resize(buf_size);
-			stream.read(&buf[0], buf_size);
-			block_str += buf;
-			read_pos += buf_size;
-		} while (read_pos < block_end);
-		m(current_block_size < params.block_size
-				? block_str + string(params.block_size - current_block_size, '\0')
-				: block_str);
+	try {
+		const size_t read_by = 1024;
+		std::ifstream stream(params.src);
+		stream.seekg(params.start);
+		for (unsigned i(params.start); i < params.end; i += params.block_size) {
+			const auto current_block_size = i + params.block_size > params.end
+				? params.end - i
+				: params.block_size;
+			const auto block_end = i + current_block_size;
+			auto read_pos = i;
+			string block_str;
+			do {
+				const auto buf_size = read_pos + read_by < block_end
+					? read_by
+					: block_end - read_pos;
+				string buf;
+				buf.resize(buf_size);
+				stream.read(&buf[0], buf_size);
+				block_str += buf;
+				read_pos += buf_size;
+			} while (read_pos < block_end);
+			m(current_block_size < params.block_size
+					? block_str + string(params.block_size - current_block_size, '\0')
+					: block_str);
+		}
+	} catch (...) {
+		m(std::current_exception());
 	}
 }
 
@@ -119,6 +123,9 @@ MapperVec GetMappers(
 	}
 	for (auto &r : readers)
 		r.join();
+	for (auto &m : mappers)
+		if (!m)
+			std::rethrow_exception(m);
 	return mappers;
 }
 

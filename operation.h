@@ -9,8 +9,12 @@ class Mapper {
 public:
 	void operator () (const string &item);
 	void operator () (std::ofstream &stream) const;
+	void operator () (std::exception_ptr except) { m_exception = except; }
+	operator std::exception_ptr  () { return m_exception; }
+	operator bool () { return m_exception == nullptr; }
 private:
 	std::vector<uint> m_hash;
+	std::exception_ptr m_exception = nullptr;
 };
 using MapperVec = std::vector<Mapper>;
 
