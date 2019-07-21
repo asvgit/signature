@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.5)
 
 project(signature VERSION 0.0.$ENV{TRAVIS_BUILD_NUMBER})
 
+set(CMAKE_CXX_STANDARD 14)
+
 add_executable(signature main.cpp)
+add_library(signature_option_lib option.cpp)
+add_library(signature_operation_lib operation.cpp)
 
 find_package(Threads)
 find_package(Boost COMPONENTS program_options filesystem REQUIRED)
@@ -18,9 +22,9 @@ set_target_properties(signature PROPERTIES
 target_link_libraries(signature
 	${CMAKE_THREAD_LIBS_INIT}
 	${Boost_LIBRARIES}
+	signature_option_lib
+	signature_operation_lib
 )
-
-install(TARGETS signature RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
