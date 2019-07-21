@@ -8,7 +8,7 @@ int main(int ac, char* av[]) {
 		option::OptionsPtr opt = option::GetOptions(ac, av);
 		if (opt == nullptr)
 			return 0;
-		auto mappers = operation::GetMappers(
+		operation::MapperVec mappers = operation::GetMappers(
 				  opt->input_file
 				, opt->block_size_mb
 				, opt->workers_number);

@@ -43,7 +43,7 @@ Options::Options(int ac, char* av[])
 }
 
 OptionsPtr GetOptions(int ac, char* av[]) {
-	auto opt = std::make_shared<Options>(ac, av);
+	OptionsPtr opt = std::make_shared<Options>(ac, av);
 	if (opt->var_map.count("help")) {
 		std::cout << opt->desc << std::endl;
 		return nullptr;
