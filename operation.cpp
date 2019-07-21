@@ -11,6 +11,7 @@ namespace fs = boost::filesystem;
 
 using string = std::string;
 using PosVector = std::vector<unsigned>;
+using CharVec = operation::CharVec;
 
 PosVector SplitFile(
 		  const string &input_file
@@ -58,7 +59,7 @@ struct ReadingParams {
 void Read(const ReadingParams &params, operation::Mapper &m) {
 	try {
 		const size_t read_by = 1024;
-		std::ifstream stream(params.src);
+		std::ifstream stream(params.src, std::ios_base::binary);
 		stream.seekg(params.start);
 		for (unsigned i(params.start); i < params.end; i += params.block_size) {
 			const auto current_block_size = i + params.block_size > params.end
@@ -66,20 +67,26 @@ void Read(const ReadingParams &params, operation::Mapper &m) {
 				: params.block_size;
 			const auto block_end = i + current_block_size;
 			auto read_pos = i;
-			string block_str;
+			CharVec block_content;
 			do {
 				const auto buf_size = read_pos + read_by < block_end
 					? read_by
 					: block_end - read_pos;
-				string buf;
-				buf.resize(buf_size);
-				stream.read(&buf[0], buf_size);
-				block_str += buf;
+				CharVec buf(buf_size);
+				stream.read(buf.data(), buf_size);
+				block_content.insert(block_content.end(), buf.begin(), buf.end());
 				read_pos += buf_size;
 			} while (read_pos < block_end);
-			m(current_block_size < params.block_size
-					? block_str + string(params.block_size - current_block_size, '\0')
-					: block_str);
+			// CharVec zero_vec(params.block_size - current_block_size, 0);
+			// block_content.insert(block_content.end(), zero_vec.begin(), zero_vec.end());
+			if (unsigned addon_size = params.block_size - current_block_size) {
+				block_content.resize(block_content.size() + addon_size);
+				std::generate(
+						  block_content.end() - addon_size
+						, block_content.end()
+						, [](){ return 0;});
+			}
+			m(block_content);
 		}
 	} catch (...) {
 		m(std::current_exception());
@@ -90,7 +97,7 @@ void Read(const ReadingParams &params, operation::Mapper &m) {
 
 namespace operation {
 
-void Mapper::operator () (const string &item) {
+void Mapper::operator () (const CharVec &item) {
 	boost::crc_32_type result;
 	result.process_bytes(item.data(), item.size());
 	m_hash.push_back(result.checksum());

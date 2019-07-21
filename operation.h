@@ -4,10 +4,11 @@
 namespace operation {
 
 using string = std::string;
+using CharVec = std::vector<char>;
 
 class Mapper {
 public:
-	void operator () (const string &item);
+	void operator () (const CharVec &item);
 	void operator () (std::ofstream &stream) const;
 	void operator () (std::exception_ptr except) { m_exception = except; }
 	operator std::exception_ptr  () { return m_exception; }
