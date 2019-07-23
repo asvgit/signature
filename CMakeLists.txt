@@ -23,6 +23,14 @@ set_target_properties(signature PROPERTIES
 	COMPILE_OPTIONS "-Wpedantic;-Wall;-Wextra"
 )
 
+target_link_libraries(signature_option_lib
+	${Boost_LIBRARIES}
+)
+
+target_link_libraries(signature_operation_lib
+	${Boost_LIBRARIES}
+)
+
 target_link_libraries(signature
 	${CMAKE_THREAD_LIBS_INIT}
 	${Boost_LIBRARIES}
