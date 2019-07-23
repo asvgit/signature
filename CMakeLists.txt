@@ -28,6 +28,7 @@ target_link_libraries(signature_option_lib
 )
 
 target_link_libraries(signature_operation_lib
+	${CMAKE_THREAD_LIBS_INIT}
 	${Boost_LIBRARIES}
 )
 
