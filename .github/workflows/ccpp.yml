@@ -7,16 +7,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: prebuild
+    - name: install references
       run: |
         sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
         sudo apt-get update
         sudo apt-get -y install gcc-7 g++-7 libboost-all-dev
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 1
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 1
-    - name: run build
+    - name: make dir
       run: |
         mkdir build
         cd build
-        cmake ..
-        cmake --build .
+    - name: cmake 
+      run: cmake ..
+    - name: make 
+      run: cmake --build .
