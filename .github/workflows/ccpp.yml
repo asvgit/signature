@@ -26,3 +26,12 @@ jobs:
         cd build
         cmake ..
         cmake --build .
+        
+  after_build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: ls
+      run: ls
