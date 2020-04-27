@@ -1,3 +1,5 @@
+![C/C++ CI](https://github.com/asvgit/signature/workflows/C/C++%20CI/badge.svg)
+
 # Signature
 
 Программа для генерации сигнатуры указанного файла.
