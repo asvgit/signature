@@ -18,7 +18,9 @@ jobs:
       run: |
         mkdir build
         cd build
-    - name: cmake 
+    - name: cmake
+      working-directory: ./build
       run: cmake ..
     - name: make 
+      working-directory: ./build
       run: cmake --build .
